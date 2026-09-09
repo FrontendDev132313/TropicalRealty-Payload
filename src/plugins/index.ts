@@ -3,6 +3,7 @@ import { nestedDocsPlugin } from '@payloadcms/plugin-nested-docs'
 import { redirectsPlugin } from '@payloadcms/plugin-redirects'
 import { seoPlugin } from '@payloadcms/plugin-seo'
 import { searchPlugin } from '@payloadcms/plugin-search'
+import { s3Storage } from '@payloadcms/storage-s3'
 import { Plugin } from 'payload'
 import { revalidateRedirects } from '@/hooks/revalidateRedirects'
 import { GenerateTitle, GenerateURL } from '@payloadcms/plugin-seo/types'
@@ -22,6 +23,31 @@ const generateURL: GenerateURL<Post | Page> = ({ doc }) => {
 
   return doc?.slug ? `${url}/${doc.slug}` : url
 }
+
+// El contenedor donde corre el sitio tiene disco efimero: lo que se sube al
+// admin desaparece en cada redespliegue. Con S3_BUCKET definido, los uploads van
+// a Supabase Storage (que habla el protocolo de S3) en vez de al sistema de
+// ficheros. Sin esa variable el plugin no se activa y Payload sigue escribiendo
+// en disco, que es lo que quieres en local.
+const storagePlugins: Plugin[] = process.env.S3_BUCKET
+  ? [
+      s3Storage({
+        collections: { media: true },
+        bucket: process.env.S3_BUCKET,
+        config: {
+          endpoint: process.env.S3_ENDPOINT,
+          region: process.env.S3_REGION,
+          credentials: {
+            accessKeyId: process.env.S3_ACCESS_KEY_ID || '',
+            secretAccessKey: process.env.S3_SECRET_ACCESS_KEY || '',
+          },
+          // Supabase Storage expone los buckets como ruta (/bucket/objeto) y no
+          // como subdominio, que es lo que asume el SDK de AWS por defecto.
+          forcePathStyle: true,
+        },
+      }),
+    ]
+  : []
 
 export const plugins: Plugin[] = [
   redirectsPlugin({
@@ -89,4 +115,5 @@ export const plugins: Plugin[] = [
       },
     },
   }),
+  ...storagePlugins,
 ]
