@@ -3,3 +3,17 @@ allowBuilds:
   sharp: true
   unrs-resolver: true
   workerd: true
+
+# El artefacto de despliegue se compila en macOS (arm64) pero corre en el hosting
+# de GoDaddy (Linux x64/glibc). Instalando ambas arquitecturas, el file tracing de
+# `next build` empaqueta los binarios de sharp para las dos.
+supportedArchitectures:
+  os:
+    - current
+    - linux
+  cpu:
+    - current
+    - x64
+  libc:
+    - current
+    - glibc

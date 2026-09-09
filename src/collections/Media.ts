@@ -40,8 +40,13 @@ export const Media: CollectionConfig = {
     },
   ],
   upload: {
-    // Upload to the public/media directory in Next.js making them publicly accessible even outside of Payload
-    staticDir: path.resolve(dirname, '../../public/media'),
+    // En el bundle `standalone` que se despliega en GoDaddy, `import.meta.url`
+    // apunta al chunk compilado y no a `src/collections`, asi que la ruta
+    // relativa deja de ser valida. Ademas cada redespliegue reemplaza el arbol
+    // de la app: en produccion MEDIA_DIR apunta a un directorio de fuera para
+    // que los archivos subidos sobrevivan. Payload los sirve igual desde
+    // `/api/media/file/<archivo>`.
+    staticDir: process.env.MEDIA_DIR || path.resolve(dirname, '../../public/media'),
     adminThumbnail: 'thumbnail',
     focalPoint: true,
     imageSizes: [
