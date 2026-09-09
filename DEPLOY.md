@@ -113,6 +113,13 @@ contenedor seguira sirviendo el build viejo.
 
 ## Diagnostico
 
+**En el log aparece `[start] DEPLOY_TARGET=(sin definir) -> modo desarrollo`**
+Falta la variable en el panel, o esta mal escrita — el propio mensaje imprime el
+valor que recibio. Sin `DEPLOY_TARGET=container` el contenedor arranca `next dev`
+y sirve produccion desde el servidor de desarrollo. Los avisos de telemetria y el
+`Watchpack Error (initial scan): EACCES scandir '/'` que salen en ese modo son
+del vigilante de ficheros de `next dev` y desaparecen al pasar a `next start`.
+
 **`TypeError: Invalid URL` al cargar next.config**
 El valor de `NEXT_PUBLIC_SERVER_URL` contiene el nombre de la variable. Ver el
 aviso del paso 3.

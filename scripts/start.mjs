@@ -46,10 +46,25 @@ const run = (label, command, args) => {
 }
 
 if (process.env.DEPLOY_TARGET !== 'container') {
-  // Maquina local: comportamiento de siempre.
+  // Maquina local: comportamiento de siempre. Se anuncia en voz alta porque este
+  // mismo caso, visto en el log de un contenedor de produccion, significa que
+  // falta la variable — y sin el aviso parece que el script no hizo nada.
+  const seen =
+    process.env.DEPLOY_TARGET === undefined
+      ? '(sin definir)'
+      : JSON.stringify(process.env.DEPLOY_TARGET)
+
+  console.log(
+    `\n[start] DEPLOY_TARGET=${seen} -> modo desarrollo (next dev).\n` +
+      `[start] Si esto es el contenedor de produccion, define DEPLOY_TARGET=container\n` +
+      `[start] en el panel: sin ella se sirve produccion desde el servidor de desarrollo.`,
+  )
+
   run('next dev', bin('next'), ['dev'])
   process.exit(0)
 }
+
+console.log('\n[start] DEPLOY_TARGET=container -> migraciones, build y next start')
 
 for (const key of ['DATABASE_URL', 'PAYLOAD_SECRET', 'NEXT_PUBLIC_SERVER_URL']) {
   if (!process.env[key]) {
